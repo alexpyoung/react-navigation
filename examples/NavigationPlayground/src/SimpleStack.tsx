@@ -12,6 +12,7 @@ import {
   NavigationStateRoute,
   SafeAreaView,
   StackActions,
+  StackViewTransitionConfigs,
   withNavigation,
 } from 'react-navigation';
 import { Button } from './commonComponents/ButtonWithMargin';
@@ -93,6 +94,7 @@ class MyNavScreen extends React.Component<MyNavScreenProps> {
           title="Go back"
         />
         <Button onPress={() => dismiss()} title="Dismiss" />
+        <Button onPress={() => navigation.navigate('Modal') } title="Present a modal" />
         <StatusBar barStyle="default" />
       </SafeAreaView>
     );
@@ -227,6 +229,19 @@ MyProfileScreen.navigationOptions = (props: MyHomeScreenProps) => {
   };
 };
 
+const MyModalScreen = ({
+  navigation,
+}: {
+  navigation: NavigationScreenProp<NavigationState>;
+}) => (
+    <MyNavScreen
+      banner="This is a modal."
+      navigation={navigation}
+    />
+  );
+
+const IOS_MODAL_ROUTES = ['Modal'];
+
 const SimpleStack = createStackNavigator(
   {
     Home: {
@@ -240,9 +255,23 @@ const SimpleStack = createStackNavigator(
       path: 'people/:name',
       screen: MyProfileScreen,
     },
+    Modal: {
+      screen: MyModalScreen,
+    }
   },
   {
-    // headerLayoutPreset: 'center',
+    transitionConfig: (transitionProps, prevTransitionProps) => {
+      const isModal = IOS_MODAL_ROUTES.some(
+        screenName =>
+          screenName === transitionProps.scene.route.routeName ||
+          (prevTransitionProps && screenName === prevTransitionProps.scene.route.routeName)
+      )
+      return StackViewTransitionConfigs.defaultTransitionConfig(
+        transitionProps,
+        prevTransitionProps,
+        isModal
+      );
+    }
   }
 );
 
